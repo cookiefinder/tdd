@@ -1,4 +1,4 @@
-package com.example.tdd;
+package com.example.tdd.exceptions;
 
 public class InsufficientArgumentsException extends RuntimeException {
     private String option;

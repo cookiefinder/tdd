@@ -1,10 +1,16 @@
 package com.example.tdd;
 
+import com.example.tdd.exceptions.IllegalOptionException;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
+import static com.example.tdd.OptionParsers.bool;
+import static com.example.tdd.OptionParsers.unary;
+
 
 public class Args {
     public static <T> T parse(Class<T> optionClass, String... args) {
@@ -29,13 +35,12 @@ public class Args {
         return getOptionParser(parameter.getType()).parse(arguments, parameter.getDeclaredAnnotation(Option.class));
     }
 
-    private static Map<Class<?>, OptionParser> PARSERS = Map.of(
-            boolean.class, new BooleanOptionParser(),
-            int.class, new SingleValuedOptionParser<>(0, Integer::parseInt),
-            String.class, new SingleValuedOptionParser<>("", String::valueOf));
-
     private static OptionParser getOptionParser(Class<?> type) {
         return PARSERS.get(type);
     }
 
+    private static Map<Class<?>, OptionParser> PARSERS = Map.of(
+            boolean.class, bool(),
+            int.class, unary(0, Integer::parseInt),
+            String.class, unary("", String::valueOf));
 }

@@ -1,5 +1,6 @@
 package com.example.tdd;
 
+import com.example.tdd.exceptions.IllegalOptionException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
