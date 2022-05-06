@@ -26,41 +26,11 @@ public class Args {
 
     private static Map<Class<?>, OptionParser> PARSERS = Map.of(
             boolean.class, new BooleanOptionParser(),
-            int.class, new IntOptionParser(),
-            String.class, new StringOptionParser());
+            int.class, new SingleValuedOptionParser<>(Integer::parseInt),
+            String.class, new SingleValuedOptionParser<>(String::valueOf));
 
     private static OptionParser getOptionParser(Class<?> type) {
         return PARSERS.get(type);
-    }
-
-    interface OptionParser {
-        Object parse(List<String> arguments, Option option);
-    }
-
-    static class BooleanOptionParser implements OptionParser {
-
-        @Override
-        public Object parse(List<String> arguments, Option option) {
-            return arguments.contains("-".concat(option.value()));
-        }
-    }
-
-    static class IntOptionParser implements OptionParser {
-
-        @Override
-        public Object parse(List<String> arguments, Option option) {
-            int index = arguments.indexOf("-".concat(option.value()));
-            return Integer.parseInt(arguments.get(index + 1));
-        }
-    }
-
-    static class StringOptionParser implements OptionParser {
-
-        @Override
-        public Object parse(List<String> arguments, Option option) {
-            int index = arguments.indexOf("-".concat(option.value()));
-            return arguments.get(index + 1);
-        }
     }
 
 }
