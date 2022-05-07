@@ -1,6 +1,7 @@
 package com.example.tdd;
 
 import com.example.tdd.exceptions.IllegalOptionException;
+import com.example.tdd.exceptions.UnsupportedOptionTypeException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.example.tdd.OptionParsers.bool;
+import static com.example.tdd.OptionParsers.list;
 import static com.example.tdd.OptionParsers.unary;
 
 
@@ -21,7 +23,7 @@ public class Args {
             Object[] values = Arrays.stream(constructor.getParameters()).map(it -> parseOption(arguments, it)).toArray();
 
             return (T) constructor.newInstance(values);
-        } catch (IllegalOptionException e) {
+        } catch (IllegalOptionException | UnsupportedOptionTypeException e) {
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -32,7 +34,12 @@ public class Args {
         if (!parameter.isAnnotationPresent(Option.class)) {
             throw new IllegalOptionException(parameter.getName());
         }
-        return getOptionParser(parameter.getType()).parse(arguments, parameter.getDeclaredAnnotation(Option.class));
+        Class<?> type = parameter.getType();
+        Option option = parameter.getDeclaredAnnotation(Option.class);
+        if (!PARSERS.keySet().contains(type)) {
+            throw new UnsupportedOptionTypeException(option.value(), type);
+        }
+        return getOptionParser(type).parse(arguments, option);
     }
 
     private static OptionParser getOptionParser(Class<?> type) {
@@ -42,5 +49,8 @@ public class Args {
     private static Map<Class<?>, OptionParser> PARSERS = Map.of(
             boolean.class, bool(),
             int.class, unary(0, Integer::parseInt),
-            String.class, unary("", String::valueOf));
+            String.class, unary("", String::valueOf),
+            String[].class, list(String[]::new, String::valueOf),
+            Integer[].class, list(Integer[]::new, Integer::parseInt)
+    );
 }

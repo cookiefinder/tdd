@@ -1,5 +1,6 @@
 package com.example.tdd;
 
+import com.example.tdd.exceptions.IllegalValueException;
 import com.example.tdd.exceptions.InsufficientArgumentsException;
 import com.example.tdd.exceptions.TooManyArgumentsException;
 import org.junit.jupiter.api.Nested;
@@ -11,9 +12,11 @@ import java.lang.annotation.Annotation;
 import java.util.function.Function;
 
 import static com.example.tdd.OptionParsers.bool;
+import static com.example.tdd.OptionParsers.list;
 import static com.example.tdd.OptionParsers.unary;
 import static com.example.tdd.OptionParsersTest.BoolOptionParser.option;
 import static java.util.Arrays.asList;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -92,6 +95,39 @@ class OptionParsersTest {
                     return value;
                 }
             };
+        }
+    }
+
+    @Nested
+    class ListOptionParser {
+        @Test
+        void should_parser_list_value() {
+            String[] value = list(String[]::new, String::valueOf).parse(asList("-g", "this", "is"), option("g"));
+            assertArrayEquals(new String[]{"this", "is"}, value);
+        }
+
+        @Test
+        void should_not_treat_negative_int_as_flag() {
+            Integer[] value = list(Integer[]::new, Integer::parseInt).parse(asList("-g", "-1", "-2"), option("g"));
+            assertArrayEquals(new Integer[]{-1, -2}, value);
+        }
+
+        @Test
+        void should_use_empty_array_as_default_value() {
+            String[] value = list(String[]::new, String::valueOf).parse(asList(), option("g"));
+            assertEquals(0, value.length);
+        }
+
+        @Test
+        void should_throw_exception_if_value_parser_cant_parse_value() {
+            Function<String, String> parser = it -> {
+                throw new RuntimeException();
+            };
+            IllegalValueException e = assertThrows(IllegalValueException.class, () -> {
+                list(String[]::new, parser).parse(asList("-g", "this", "is"), option("g"));
+            });
+            assertEquals("g", e.getOption());
+            assertEquals("this", e.getValue());
         }
     }
 }
