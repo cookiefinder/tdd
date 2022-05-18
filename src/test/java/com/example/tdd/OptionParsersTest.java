@@ -28,7 +28,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 
 class OptionParsersTest {
-
     @Nested
     class UnaryOptionParser {
         @Test
@@ -36,7 +35,6 @@ class OptionParsersTest {
             TooManyArgumentsException e = assertThrows(TooManyArgumentsException.class, () -> {
                 unary(0, Integer::parseInt).parse(asList("-p", "8080", "8081"), option("p"));
             });
-
             assertEquals("p", e.getOption());
         }
 
@@ -46,7 +44,6 @@ class OptionParsersTest {
             InsufficientArgumentsException e = assertThrows(InsufficientArgumentsException.class, () -> {
                 unary(0, Integer::parseInt).parse(asList(arguments.split(" ")), option("p"));
             });
-
             assertEquals("p", e.getOption());
         }
 
@@ -72,7 +69,6 @@ class OptionParsersTest {
             TooManyArgumentsException e = assertThrows(TooManyArgumentsException.class, () -> {
                 bool().parse(asList("-l", "t"), option("l"));
             });
-
             assertEquals("l", e.getOption());
         }
 
@@ -107,12 +103,9 @@ class OptionParsersTest {
         void should_parser_list_value() {
             Function parser = Mockito.mock(Function.class);
             list(Object[]::new, parser).parse(asList("-g", "this", "is"), option("g"));
-
             InOrder order = Mockito.inOrder(parser, parser);
-
             order.verify(parser).apply("this");
             order.verify(parser).apply("is");
-
         }
 
         @Test

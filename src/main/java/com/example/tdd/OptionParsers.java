@@ -60,5 +60,4 @@ class OptionParsers {
                 .filter(it -> arguments.get(it).matches("^-[a-zA-Z]+$"))
                 .findFirst().orElse(arguments.size()));
     }
-
 }

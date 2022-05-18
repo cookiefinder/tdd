@@ -19,9 +19,7 @@ public class Args {
         try {
             List<String> arguments = Arrays.stream(args).toList();
             Constructor<?> constructor = optionClass.getDeclaredConstructors()[0];
-
             Object[] values = Arrays.stream(constructor.getParameters()).map(it -> parseOption(arguments, it)).toArray();
-
             return (T) constructor.newInstance(values);
         } catch (IllegalOptionException | UnsupportedOptionTypeException e) {
             throw e;

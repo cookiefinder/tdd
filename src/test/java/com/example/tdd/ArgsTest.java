@@ -27,7 +27,6 @@ public class ArgsTest {
         IllegalOptionException e = assertThrows(IllegalOptionException.class, () -> {
             Args.parse(OptionsWithoutAnnotation.class, "-l", "-p", "8080", "-d", "/usr/logs");
         });
-
         assertEquals("port", e.getParameter());
     }
 
@@ -39,7 +38,6 @@ public class ArgsTest {
         UnsupportedOptionTypeException e = assertThrows(UnsupportedOptionTypeException.class, () -> {
             Args.parse(OptionsWithUnsupportedType.class, "-l", "abd");
         });
-
         assertEquals("l", e.getOption());
         assertEquals(Object.class, e.getType());
     }
@@ -50,7 +48,6 @@ public class ArgsTest {
     @Test
     void should_example_2() {
         ListOptions options = Args.parse(ListOptions.class, "-g", "this", "is", "a", "list", "-d", "1", "2", "-3", "5");
-
         assertArrayEquals(new String[]{"this", "is", "a", "list"}, options.group());
         assertArrayEquals(new Integer[]{1, 2, -3, 5}, options.decimals());
     }
