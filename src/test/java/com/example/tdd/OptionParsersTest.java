@@ -11,12 +11,11 @@ import org.mockito.InOrder;
 import org.mockito.Mockito;
 
 import java.lang.annotation.Annotation;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
-import static com.example.tdd.OptionParsers.bool;
-import static com.example.tdd.OptionParsers.list;
-import static com.example.tdd.OptionParsers.unary;
+import static com.example.tdd.OptionParsers.*;
 import static com.example.tdd.OptionParsersTest.BoolOptionParser.option;
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -204,6 +203,51 @@ class OptionParsersTest {
             InOrder order = Mockito.inOrder(parser, parser);
             order.verify(parser).apply("this");
             order.verify(parser).apply("is");
+        }
+    }
+
+    @Nested
+    class MapOptionParser {
+        @Test
+        void should_parser_map_single_value() {
+            Map<String, String> value = map(Map.of(), String::valueOf, String::valueOf)
+                    .parse(asList("-e", "MYSQL_ALLOW_EMPTY_PASSWORD=yes"), option("e"));
+            assertEquals(Map.of("MYSQL_ALLOW_EMPTY_PASSWORD", "yes"), value);
+        }
+
+        @Test
+        void should_parser_map_multi_value() {
+            Map<String, String> value = map(Map.of(), String::valueOf, String::valueOf)
+                    .parse(asList("-e", "MYSQL_ALLOW_EMPTY_USERNAME=yes", "-e", "MYSQL_ALLOW_EMPTY_PASSWORD=yes"), option("e"));
+            assertEquals(Map.of("MYSQL_ALLOW_EMPTY_USERNAME", "yes", "MYSQL_ALLOW_EMPTY_PASSWORD", "yes"), value);
+        }
+
+        @Test
+        void should_parser_map_multi_same_value() {
+            Map<String, String> value = map(Map.of(), String::valueOf, String::valueOf)
+                    .parse(asList("-e", "MYSQL_ALLOW_EMPTY_PASSWORD=yes", "-e", "MYSQL_ALLOW_EMPTY_PASSWORD=yes"), option("e"));
+            assertEquals(Map.of("MYSQL_ALLOW_EMPTY_PASSWORD", "yes"), value);
+        }
+
+        @Test
+        void should_parse_multi_value_for_one_option() {
+            Map<String, String> value = map(Map.of(), String::valueOf, String::valueOf)
+                    .parse(asList("-e", "MYSQL_ALLOW_EMPTY_PASSWORD=yes", "MYSQL_ALLOW_EMPTY_PASSWORD=yes"), option("e"));
+            assertEquals(Map.of("MYSQL_ALLOW_EMPTY_PASSWORD", "yes"), value);
+        }
+
+        @Test
+        void should_throw_exception_when_parse_illegal_value() {
+            IllegalValueException e = assertThrows(IllegalValueException.class, () -> map(Map.of(), String::valueOf, String::valueOf)
+                    .parse(asList("-e", "MYSQL_ALLOW_EMPTY_PASSWORD"), option("e")));
+            assertEquals("e", e.getOption());
+        }
+
+        @Test
+        void should_set_default_value_when_option_present() {
+            Map<String, String> value = map(Map.of(), String::valueOf, String::valueOf)
+                    .parse(asList("-e"), option("e"));
+            assertEquals(Map.of(), value);
         }
     }
 }

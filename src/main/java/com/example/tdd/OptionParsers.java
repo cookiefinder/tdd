@@ -4,11 +4,10 @@ import com.example.tdd.exceptions.IllegalValueException;
 import com.example.tdd.exceptions.InsufficientArgumentsException;
 import com.example.tdd.exceptions.TooManyArgumentsException;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 class OptionParsers {
@@ -29,12 +28,28 @@ class OptionParsers {
                 .orElse(generator.apply(0));
     }
 
-    private static Optional<List<String>> values(List<String> arguments, Option option) {
-        int index = arguments.indexOf(FORMATS.get(option.format()).concat(option.value()));
-        return Optional.ofNullable(index == -1 ? null : values(arguments, index));
+    public static <K, V> OptionParser<Map<K, V>> map(Map<K, V> defaultValue, Function<String, K> keyParser, Function<String, V> valueParser) {
+        return (arguments, option) -> values(arguments, option)
+                .map(it -> parseValue(option, it, keyParser, valueParser))
+                .orElse(defaultValue);
     }
 
-    private static Map<Format, String> FORMATS = Map.of(Format.DASH, "--",
+    private static Optional<List<String>> values(List<String> arguments, Option option) {
+        int[] indexes = IntStream.range(0, arguments.size())
+                .filter(it -> {
+                    String flag = FORMATS.get(option.format()).concat(option.value());
+                    return flag.equals(arguments.get(it));
+                }).toArray();
+        if (indexes.length == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(Arrays.stream(indexes)
+                .mapToObj(index -> values(arguments, index))
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList()));
+    }
+
+    private static final Map<Format, String> FORMATS = Map.of(Format.DASH, "--",
             Format.HYPHEN, "-");
 
     private static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
@@ -57,6 +72,19 @@ class OptionParsers {
         } catch (Exception e) {
             throw new IllegalValueException(option.value(), value);
         }
+    }
+
+    private static <K, V> Map<K, V> parseValue(Option option, List<String> values, Function<String, K> keyParser, Function<String, V> valueParser) {
+        Map<K, V> map = new HashMap<>();
+        values.forEach(value -> {
+            try {
+                String[] split = value.split("=");
+                map.put(keyParser.apply(split[0]), valueParser.apply(split[1]));
+            } catch (Exception e) {
+                throw new IllegalValueException(option.value(), value);
+            }
+        });
+        return map;
     }
 
     private static List<String> values(List<String> arguments, int index) {

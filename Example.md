@@ -9,8 +9,7 @@ multi --logging --port 8080
 
 // sad pass
 bool --logging true
-int --port/--port 8080 8081
-list --group
+int --port 8080 8081
 
 // default value
 bool false
@@ -24,10 +23,11 @@ list []
 // happy pass
 map -e MYSQL_ALLOW_EMPTY_PASSWORD=yes
 map -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_ALLOW_EMPTY_PASSWORD=yes
+map -e MYSQL_ALLOW_EMPTY_PASSWORD=yes -e MYSQL_ALLOW_EMPTY_PASSWORD=yes
+map -e MYSQL_ALLOW_EMPTY_PASSWORD=yes MYSQL_ALLOW_EMPTY_PASSWORD=yes
 
 // sad pass
-map -e
-map -e MYSQL_ALLOW_EMPTY_PASSWORD=yes MYSQL_ALLOW_EMPTY_PASSWORD=yes
+map -e MYSQL_ALLOW_EMPTY_PASSWORD
 
 // default value
 map {}
