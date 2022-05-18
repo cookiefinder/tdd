@@ -54,4 +54,17 @@ public class ArgsTest {
 
     record ListOptions(@Option("g") String[] group, @Option("d") Integer[] decimals) {
     }
+
+    @Test
+    void should_parse_multi_full_options() {
+        MultiFullOptions options = Args.parse(MultiFullOptions.class, "--logging", "--port", "8080", "--directory", "/usr/logs");
+        assertTrue(options.logging());
+        assertEquals(8080, options.port());
+        assertEquals("/usr/logs", options.directory());
+    }
+
+    record MultiFullOptions(@Option(value = "logging", format = Format.DASH) boolean logging,
+                            @Option(value = "port", format = Format.DASH) int port,
+                            @Option(value = "directory", format = Format.DASH) String directory) {
+    }
 }

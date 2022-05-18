@@ -5,6 +5,7 @@ import com.example.tdd.exceptions.InsufficientArgumentsException;
 import com.example.tdd.exceptions.TooManyArgumentsException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -29,9 +30,12 @@ class OptionParsers {
     }
 
     private static Optional<List<String>> values(List<String> arguments, Option option) {
-        int index = arguments.indexOf("-".concat(option.value()));
+        int index = arguments.indexOf(FORMATS.get(option.format()).concat(option.value()));
         return Optional.ofNullable(index == -1 ? null : values(arguments, index));
     }
+
+    private static Map<Format, String> FORMATS = Map.of(Format.DASH, "--",
+            Format.HYPHEN, "-");
 
     private static Optional<List<String>> values(List<String> arguments, Option option, int expectedSize) {
         return values(arguments, option).map(it -> checkSize(option, expectedSize, it));
@@ -57,7 +61,7 @@ class OptionParsers {
 
     private static List<String> values(List<String> arguments, int index) {
         return arguments.subList(index + 1, IntStream.range(index + 1, arguments.size())
-                .filter(it -> arguments.get(it).matches("^-[a-zA-Z]+$"))
+                .filter(it -> arguments.get(it).matches("^-[-]?[a-zA-Z]+$"))
                 .findFirst().orElse(arguments.size()));
     }
 }
